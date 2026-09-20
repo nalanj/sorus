@@ -1,4 +1,4 @@
-# mise configuration for the basis Go project.
+# mise configuration for the sorus Go project.
 # https://mise.jdx.dev/
 
 [tools]
@@ -10,8 +10,8 @@ go = "1.27.1"
 # Pass extra args after `--`: `mise run run -- -prompt "Hello!"`.
 
 [tasks.run]
-description = "Run the basis CLI"
-run = "go run ./cmd/basis"
+description = "Run the sorus CLI"
+run = "go run ./cmd/sorus"
 
 [tasks.test]
 description = "Run all tests"

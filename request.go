@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // Request is the unit of work sent to a [Client]. It is built by fluent
 // configuration starting with [NewRequest].

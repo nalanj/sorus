@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // Message is one turn in a conversation.
 type Message struct {

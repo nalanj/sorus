@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // Provider is one catalog provider entry. It carries the metadata needed to
 // pick a wire-protocol implementation and to look up credentials in the
@@ -93,7 +93,7 @@ func (p *Provider) Model(id string) (*Model, bool) {
 func (p *Provider) MustModel(id string) *Model {
 	m, ok := p.models[id]
 	if !ok {
-		panic("basis: provider " + p.ID + " has no model " + id)
+		panic("sorus: provider " + p.ID + " has no model " + id)
 	}
 	return m
 }
@@ -132,7 +132,7 @@ func (c *Catalog) Provider(id string) *Provider {
 func (c *Catalog) MustProvider(id string) *Provider {
 	p, ok := c.providers[id]
 	if !ok {
-		panic("basis: catalog has no provider " + id)
+		panic("sorus: catalog has no provider " + id)
 	}
 	return p
 }

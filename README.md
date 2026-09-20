@@ -1,4 +1,4 @@
-# basis
+# sorus
 
 > A small Go package that reads the [models.dev](https://models.dev) catalog and exposes a provider-agnostic interface for calling the models on it.
 
@@ -28,14 +28,14 @@ Deferred:
 ## Install
 
 ```bash
-go get github.com/nalanj/basis
+go get github.com/nalanj/sorus
 ```
 
 Requires Go 1.22+. Wire-protocol handling is internal — users don't need any provider SDKs in their project.
 
-> **Import alias.** Because the package name is `basis`, feel free to alias on import if you'd prefer:
+> **Import alias.** Because the package name is `sorus`, feel free to alias on import if you'd prefer:
 > ```go
-> import m "github.com/nalanj/basis"
+> import m "github.com/nalanj/sorus"
 > ```
 > The README examples show unaliased usage; substitute your alias if it fits.
 
@@ -48,7 +48,7 @@ import (
     "context"
     "fmt"
 
-    "github.com/nalanj/basis"
+    "github.com/nalanj/sorus"
 )
 
 func main() {
@@ -56,15 +56,15 @@ func main() {
 
     // 1. Load the catalog. Fetches https://models.dev/api.json and caches it
     //    under the OS user cache dir. ~400 KB JSON.
-    cat, err := basis.LoadCatalog(ctx)
+    cat, err := sorus.LoadCatalog(ctx)
     if err != nil {
         panic(err)
     }
 
     // 2. Build a client for a provider. New() looks up OPENROUTER_API_KEY in
     //    os.Getenv (catalog says that's the right name for OpenRouter), errors
-    //    if missing, and hands back a *basis.Client with the right base URL.
-    client, err := basis.New(ctx, cat, "openrouter")
+    //    if missing, and hands back a *sorus.Client with the right base URL.
+    client, err := sorus.New(ctx, cat, "openrouter")
     if err != nil {
         panic(err)
     }
@@ -76,7 +76,7 @@ func main() {
 
     // 4. Build a Request by fluent configuration. Literals go directly into
     //    chained methods — no Ptr helper to learn.
-    req := basis.NewRequest(model).
+    req := sorus.NewRequest(model).
         System("You are a helpful assistant.").
         Temperature(0.7).
         MaxTokens(2048).
@@ -98,7 +98,7 @@ These are the choices you should push back on if they don't match what you want,
 
 The catalog says ~187 of 222 providers speak OpenAI's chat completions protocol (with `npm: "@ai-sdk/openai-compatible"` or `npm: "@ai-sdk/openai"`). But "OpenAI-compatible" is the wire, not the API. Different providers expose different shapes (one has `reasoning_effort`, another has `enable_thinking`, a third has neither). The point of this package is to *hide* those differences behind one type — so when we add Anthropic, Bedrock, Vertex, the call site doesn't change.
 
-So we wrap. Users import only `github.com/nalanj/basis`. The package internally implements the `Client` interface for each supported wire protocol — one today, more later — and converts between the fluent `Request` shape and each provider's wire format.
+So we wrap. Users import only `github.com/nalanj/sorus`. The package internally implements the `Client` interface for each supported wire protocol — one today, more later — and converts between the fluent `Request` shape and each provider's wire format.
 
 There is no protocol-specific escape hatch by design. If the `Client` interface misses something you need, the wrapper is the seam — file an issue. We deliberately don't expose wire-protocol SDK types from the package's public surface.
 
@@ -112,7 +112,7 @@ This keeps `Model` a thin description, makes each request self-contained, and av
 
 ### Auth leans on env vars
 
-For every provider, models.dev records the env-var names the provider expects to read credentials from (`env: ["OPENROUTER_API_KEY"]`). `basis.New(ctx, cat, id)` does:
+For every provider, models.dev records the env-var names the provider expects to read credentials from (`env: ["OPENROUTER_API_KEY"]`). `sorus.New(ctx, cat, id)` does:
 
 1. Looks up the provider record.
 2. Reads its `env` list.
@@ -124,22 +124,22 @@ We deliberately do not implement OAuth/device-code/browser flows for any provide
 Override the env-var lookup with `WithAPIKey(...)`:
 
 ```go
-client, err := basis.New(ctx, cat, "openrouter",
-    basis.WithAPIKey(os.Getenv("MY_APP_OPENROUTER_KEY")),
+client, err := sorus.New(ctx, cat, "openrouter",
+    sorus.WithAPIKey(os.Getenv("MY_APP_OPENROUTER_KEY")),
 )
 ```
 
 Or inject a custom `*http.Client` for retries/middleware/observability:
 
 ```go
-client, err := basis.New(ctx, cat, "openrouter",
-    basis.WithHTTPClient(myHTTPClient),
+client, err := sorus.New(ctx, cat, "openrouter",
+    sorus.WithHTTPClient(myHTTPClient),
 )
 ```
 
 ### Provider shapes supported today
 
-`basis.New(...)` accepts a provider when its `npm` field is one of:
+`sorus.New(...)` accepts a provider when its `npm` field is one of:
 
 - `@ai-sdk/openai-compatible` — generic chat-completions wire protocol with a custom base URL (181 providers, ~80% of the catalog)
 - `@ai-sdk/openai` — the chat-completions shape with first-party body params (6: `openai`, `vivgrid`, `infer`, `meta`, `perplexity-agent`, `neosmith`)
@@ -460,7 +460,7 @@ ErrStreamClosed          // operations on a closed Stream
 ### Stream a response
 
 ```go
-req := basis.NewRequest(model).
+req := sorus.NewRequest(model).
     System("You are a helpful assistant.").
     Temperature(0.7).
     MaxTokens(2048).
@@ -474,14 +474,14 @@ var out strings.Builder
 for stream.Next() {
     ev := stream.Event()
     switch ev.Type {
-    case basis.EventContentDelta:
+    case sorus.EventContentDelta:
         out.WriteString(ev.TextDelta)
         fmt.Print(ev.TextDelta)
-    case basis.EventReasoningDelta:
+    case sorus.EventReasoningDelta:
         // collect or display; e.g. ui.Spin(ev.ReasoningDelta)
-    case basis.EventDone:
+    case sorus.EventDone:
         fmt.Printf("\n--- done, usage=%+v ---\n", ev.Usage)
-    case basis.EventError:
+    case sorus.EventError:
         return ev.Err
     }
 }
@@ -497,10 +497,10 @@ type GetWeatherArgs struct {
     Location string `json:"location"`
 }
 
-req := basis.NewRequest(model).
+req := sorus.NewRequest(model).
     System("...").
     User("Weather in Paris?").
-    Tools(basis.Tool{
+    Tools(sorus.Tool{
         Name:        "get_weather",
         Description: "Get the current weather for a location.",
         Parameters: map[string]any{
@@ -511,20 +511,20 @@ req := basis.NewRequest(model).
             "required": []string{"location"},
         },
     }).
-    ToolChoice(basis.ToolChoice{Mode: basis.ToolChoiceRequired, Name: "get_weather"})
+    ToolChoice(sorus.ToolChoice{Mode: sorus.ToolChoiceRequired, Name: "get_weather"})
 
 resp, err := client.Chat(ctx, req)
 
 // If the model called a tool, run it and reply
 if len(resp.Message.ToolCalls) > 0 {
-    var toolResults []basis.Part
+    var toolResults []sorus.Part
     for _, tc := range resp.Message.ToolCalls {
         var args GetWeatherArgs
         _ = json.Unmarshal([]byte(tc.Arguments), &args)
-        toolResults = append(toolResults, basis.ToolResult{
+        toolResults = append(toolResults, sorus.ToolResult{
             ToolCallID: tc.ID,
-            Content: []basis.Part{
-                basis.Text{Value: fetchWeather(ctx, args.Location)},
+            Content: []sorus.Part{
+                sorus.Text{Value: fetchWeather(ctx, args.Location)},
             },
         })
     }
@@ -532,8 +532,8 @@ if len(resp.Message.ToolCalls) > 0 {
     // Append the assistant turn + tool result turn, send again
     req = req.Clone().
         Message(resp.Message).                          // the assistant's tool-call turn
-        Message(basis.Message{
-            Role:    basis.RoleTool,
+        Message(sorus.Message{
+            Role:    sorus.RoleTool,
             Content: toolResults,
         })
 
@@ -544,11 +544,11 @@ if len(resp.Message.ToolCalls) > 0 {
 ### Structured output (JSON schema)
 
 ```go
-req := basis.NewRequest(model).
+req := sorus.NewRequest(model).
     User("Summarize today's weather in Paris.").
-    ResponseFormat(&basis.ResponseFormat{
+    ResponseFormat(&sorus.ResponseFormat{
         Type: "json_schema",
-        JSONSchema: &basis.JSONSchema{
+        JSONSchema: &sorus.JSONSchema{
             Name: "weather_report",
             Strict: true,
             Schema: map[string]any{
@@ -568,9 +568,9 @@ resp, err := client.Chat(ctx, req)
 ### Native reasoning effort
 
 ```go
-req := basis.NewRequest(model).
+req := sorus.NewRequest(model).
     User("Solve this step-by-step.").
-    Reasoning(basis.Reasoning{Effort: "medium"})
+    Reasoning(sorus.Reasoning{Effort: "medium"})
 
 resp, err := client.Chat(ctx, req)
 ```
@@ -578,14 +578,14 @@ resp, err := client.Chat(ctx, req)
 ### Multimodal input
 
 ```go
-req := basis.NewRequest(model).
-    Message(basis.Message{
-        Role: basis.RoleUser,
-        Content: []basis.Part{
-            basis.Text{Value: "What's in this image?"},
-            basis.ImageURL{URL: "https://example.com/cat.jpg", Detail: "high"},
+req := sorus.NewRequest(model).
+    Message(sorus.Message{
+        Role: sorus.RoleUser,
+        Content: []sorus.Part{
+            sorus.Text{Value: "What's in this image?"},
+            sorus.ImageURL{URL: "https://example.com/cat.jpg", Detail: "high"},
             // Or:
-            basis.ImageData{Data: pngBytes, MIMEType: "image/png"},
+            sorus.ImageData{Data: pngBytes, MIMEType: "image/png"},
         },
     })
 
@@ -607,15 +607,15 @@ for _, m := range sonnets {
 //go:embed api.json
 var apiJSON []byte
 
-func loadCatalog(ctx context.Context) (*basis.Catalog, error) {
-    return basis.LoadCatalogFromBytes(apiJSON)
+func loadCatalog(ctx context.Context) (*sorus.Catalog, error) {
+    return sorus.LoadCatalogFromBytes(apiJSON)
 }
 ```
 
 ### Reusable defaults with `Clone`
 
 ```go
-defaultReq := basis.NewRequest(model).
+defaultReq := sorus.NewRequest(model).
     System("You are a helpful assistant.").
     Temperature(0.7).
     MaxTokens(2048)

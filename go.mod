@@ -1,4 +1,4 @@
-module github.com/nalanj/basis
+module github.com/nalanj/sorus
 
 go 1.24
 

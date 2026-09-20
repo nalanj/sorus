@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 import (
 	"context"
@@ -52,7 +52,7 @@ func (c *chatCompletionsClient) Stream(ctx context.Context, req *Request) (*Stre
 	}
 	stream := c.api.Chat.Completions.NewStreaming(ctx, params)
 	if stream == nil {
-		return nil, fmt.Errorf("basis: failed to open stream")
+		return nil, fmt.Errorf("sorus: failed to open stream")
 	}
 	return wrapStream(func() (Event, bool, error) {
 		if !stream.Next() {

@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // ResponseFormat asks the model to produce structured output.
 //

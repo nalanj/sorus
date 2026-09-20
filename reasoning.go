@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // Reasoning configures model reasoning effort/budget.
 //

@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // Tool describes one tool the model may call. Parameters is a JSON Schema
 // object; build it manually or with invopop/jsonschema.

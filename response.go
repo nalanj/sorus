@@ -1,4 +1,4 @@
-package basis
+package sorus
 
 // Response is what [Client.Chat] returns.
 type Response struct {

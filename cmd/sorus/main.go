@@ -1,15 +1,15 @@
-// Command basis is a small CLI for talking to any models.dev provider that
-// basis supports. It loads the catalog, builds a Client for the requested
+// Command sorus is a small CLI for talking to any models.dev provider that
+// sorus supports. It loads the catalog, builds a Client for the requested
 // provider (resolving the API key from the provider's documented env vars),
 // and either streams the response or returns it as a single shot.
 //
 // Usage:
 //
-//	MINIMAX_API_KEY=... basis -prompt "Hello!"
-//	MINIMAX_API_KEY=... basis -provider openrouter -model anthropic/claude-sonnet-4-5 -prompt "Hello!"
-//	echo "Hi there" | MINIMAX_API_KEY=... basis
+//	MINIMAX_API_KEY=... sorus -prompt "Hello!"
+//	MINIMAX_API_KEY=... sorus -provider openrouter -model anthropic/claude-sonnet-4-5 -prompt "Hello!"
+//	echo "Hi there" | MINIMAX_API_KEY=... sorus
 //
-// Run `basis -h` for flags.
+// Run `sorus -h` for flags.
 package main
 
 import (
@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nalanj/basis"
+	"github.com/nalanj/sorus"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 		noStream:    *noStream,
 		quiet:       *quiet,
 	}); err != nil {
-		fmt.Fprintf(os.Stderr, "basis: %v\n", err)
+		fmt.Fprintf(os.Stderr, "sorus: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -69,12 +69,12 @@ type runOpts struct {
 }
 
 func run(ctx context.Context, o runOpts) error {
-	cat, err := basis.LoadCatalog(ctx)
+	cat, err := sorus.LoadCatalog(ctx)
 	if err != nil {
 		return fmt.Errorf("load catalog: %w", err)
 	}
 
-	client, err := basis.New(ctx, cat, o.provider)
+	client, err := sorus.New(ctx, cat, o.provider)
 	if err != nil {
 		return fmt.Errorf("client: %w", err)
 	}
@@ -88,7 +88,7 @@ func run(ctx context.Context, o runOpts) error {
 		return fmt.Errorf("model %q not found on provider %q", o.modelID, o.provider)
 	}
 
-	req := basis.NewRequest(m)
+	req := sorus.NewRequest(m)
 	if o.system != "" {
 		req = req.System(o.system)
 	}
@@ -134,25 +134,25 @@ func run(ctx context.Context, o runOpts) error {
 	for stream.Next() {
 		ev := stream.Event()
 		switch ev.Type {
-		case basis.EventContentDelta:
+		case sorus.EventContentDelta:
 			fmt.Print(ev.TextDelta)
-		case basis.EventContentStart:
+		case sorus.EventContentStart:
 			// marker event; ignore
-		case basis.EventReasoningDelta:
+		case sorus.EventReasoningDelta:
 			if !o.quiet {
 				fmt.Fprintf(os.Stderr, "[reasoning] %s", ev.ReasoningDelta)
 			}
-		case basis.EventToolCallStart:
+		case sorus.EventToolCallStart:
 			if !o.quiet {
 				fmt.Fprintf(os.Stderr, "[tool_call] %s(%s)\n", ev.ToolCall.Name, ev.ToolCall.ID)
 			}
-		case basis.EventToolCallDelta:
+		case sorus.EventToolCallDelta:
 			if !o.quiet {
 				fmt.Fprintf(os.Stderr, "  args += %s\n", ev.ArgumentDelta)
 			}
-		case basis.EventToolCallEnd:
+		case sorus.EventToolCallEnd:
 			// marker event; ignore
-		case basis.EventDone:
+		case sorus.EventDone:
 			if !o.quiet {
 				if ev.Usage != nil {
 					fmt.Fprintf(os.Stderr, "\n[done: stop=%s in_tok=%d out_tok=%d]\n",
@@ -161,7 +161,7 @@ func run(ctx context.Context, o runOpts) error {
 					fmt.Fprintf(os.Stderr, "\n[done: stop=%s]\n", ev.StopReason)
 				}
 			}
-		case basis.EventError:
+		case sorus.EventError:
 			return fmt.Errorf("stream: %w", ev.Err)
 		}
 	}
