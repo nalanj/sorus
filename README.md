@@ -52,6 +52,36 @@ fmt.Println(resp.Message.Text())
 
 `LoadCatalog` fetches `https://models.dev/api.json` and caches the parsed result for the process lifetime. `New(ctx, cat, "openrouter")` reads the env var the catalog says OpenRouter expects (`OPENROUTER_API_KEY`) and points at the right base URL. Set the key, call `Chat`, get a response.
 
+## CLI
+
+`sorus` ships with a small binary that wraps the library — handy for smoke-testing providers from your terminal.
+
+```bash
+go install github.com/nalanj/sorus/cmd/sorus@latest
+```
+
+It loads the catalog, resolves the API key from the provider's documented env vars, and streams the response to stdout. Reasoning and tool-call events go to stderr.
+
+```bash
+ANTHROPIC_API_KEY=... sorus -provider anthropic -model claude-sonnet-4-5 -prompt "Hello, world!"
+echo "Summarize this:" | sorus -provider openrouter -model anthropic/claude-sonnet-4-5
+```
+
+Defaults to provider `minimax` / model `MiniMax-M2`. Flags:
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `-provider` | `minimax` | Provider id from the models.dev catalog |
+| `-model` | `MiniMax-M2` | Model id on that provider |
+| `-system` | _(unset)_ | System prompt |
+| `-prompt` | _(unset)_ | User prompt; if empty, read from stdin |
+| `-temperature` | -1 _(unset)_ | Sampling temperature 0.0–1.0 |
+| `-max-tokens` | -1 _(unset)_ | Maximum output tokens |
+| `-no-stream` | `false` | Single non-streaming request |
+| `-quiet` | `false` | Suppress reasoning/tool-call events on stderr |
+
+Run `sorus -h` for the canonical flag list.
+
 ## Design
 
 ### Wrapped, not pass-through
