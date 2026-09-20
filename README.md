@@ -300,6 +300,10 @@ for _, query := range queries {
 - **`Stream.Event()` returns a value type, not a pointer.** The hot path allocates an `Event` per token. If that's a problem for your workload, a `Stream.Visit(func(Event) bool)` variant would be straightforward to add.
 - **Catalog freshness.** `LoadCatalog` relies on `https://models.dev/api.json` and caches the parsed catalog in memory for the process lifetime. For reproducible builds, prefer vendoring via `LoadCatalogFromBytes` or `LoadCatalogFromFS` so the network isn't touched.
 
+## Contributing
+
+Open an issue first. Before sending a PR or patch, file an [issue](https://github.com/nalanj/sorus/issues) describing what you want to change and why — it's easier to align on approach before code is written than to rework a pull request after the fact. Bugs, feature ideas, and questions all fit.
+
 ## License
 
 **MIT.** See `LICENSE` for details.
