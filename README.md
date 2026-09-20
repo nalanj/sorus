@@ -28,14 +28,14 @@ Deferred:
 ## Install
 
 ```bash
-go get github.com/tokagen/basis
+go get github.com/nalanj/basis
 ```
 
 Requires Go 1.22+. Wire-protocol handling is internal — users don't need any provider SDKs in their project.
 
 > **Import alias.** Because the package name is `basis`, feel free to alias on import if you'd prefer:
 > ```go
-> import m "github.com/tokagen/basis"
+> import m "github.com/nalanj/basis"
 > ```
 > The README examples show unaliased usage; substitute your alias if it fits.
 
@@ -48,7 +48,7 @@ import (
     "context"
     "fmt"
 
-    "github.com/tokagen/basis"
+    "github.com/nalanj/basis"
 )
 
 func main() {
@@ -98,7 +98,7 @@ These are the choices you should push back on if they don't match what you want,
 
 The catalog says ~187 of 222 providers speak OpenAI's chat completions protocol (with `npm: "@ai-sdk/openai-compatible"` or `npm: "@ai-sdk/openai"`). But "OpenAI-compatible" is the wire, not the API. Different providers expose different shapes (one has `reasoning_effort`, another has `enable_thinking`, a third has neither). The point of this package is to *hide* those differences behind one type — so when we add Anthropic, Bedrock, Vertex, the call site doesn't change.
 
-So we wrap. Users import only `github.com/tokagen/basis`. The package internally implements the `Client` interface for each supported wire protocol — one today, more later — and converts between the fluent `Request` shape and each provider's wire format.
+So we wrap. Users import only `github.com/nalanj/basis`. The package internally implements the `Client` interface for each supported wire protocol — one today, more later — and converts between the fluent `Request` shape and each provider's wire format.
 
 There is no protocol-specific escape hatch by design. If the `Client` interface misses something you need, the wrapper is the seam — file an issue. We deliberately don't expose wire-protocol SDK types from the package's public surface.
 

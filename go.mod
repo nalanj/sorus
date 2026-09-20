@@ -1,4 +1,4 @@
-module github.com/tokagen/basis
+module github.com/nalanj/basis
 
 go 1.24
 
