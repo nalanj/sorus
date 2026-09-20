@@ -13,15 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install Go (and any other tools declared in mise.toml).
       - uses: jdx/mise-action@v4
-        with:
-          # Installs everything declared in mise.toml — currently Go only.
-          # Cache is enabled by default.
 
       - run: go version
-
       - run: go vet ./...
-
       - run: go build ./...
 
       # -race: this package fans out across HTTP + concurrent stream events.
