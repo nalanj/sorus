@@ -1,0 +1,22 @@
+# mise configuration for the basis Go project.
+# https://mise.jdx.dev/
+
+[tools]
+# Pin to the latest stable Go. The go.mod `go` directive stays at the
+# project's minimum supported version; this controls the local toolchain.
+go = "1.27.1"
+
+# Tasks — run with `mise run <task>` (e.g. `mise run test`).
+# Pass extra args after `--`: `mise run run -- -prompt "Hello!"`.
+
+[tasks.run]
+description = "Run the basis CLI"
+run = "go run ./cmd/basis"
+
+[tasks.test]
+description = "Run all tests"
+run = "go test ./..."
+
+[tasks.lint]
+description = "Run go vet"
+run = "go vet ./..."
