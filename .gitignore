@@ -1,0 +1,13 @@
+# Compiled binaries
+/basis
+/*.exe
+*.test
+
+# Test/coverage profiles
+*.out
+*.cover
+
+# Editor / OS junk
+.DS_Store
+.vscode/
+.idea/
