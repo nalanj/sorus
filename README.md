@@ -14,7 +14,7 @@ Supported wire protocols: OpenAI chat completions (`@ai-sdk/openai-compatible`, 
 go get github.com/nalanj/sorus
 ```
 
-Go 1.22+.
+Go 1.24+.
 
 ```go
 import "github.com/nalanj/sorus"
