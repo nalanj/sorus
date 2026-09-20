@@ -11,7 +11,7 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Install Go (and any other tools declared in mise.toml).
       - uses: jdx/mise-action@v4
