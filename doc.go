@@ -6,15 +6,14 @@
 //
 //	cat, _ := sorus.LoadCatalog(ctx)
 //	client, _ := sorus.New(ctx, cat, "openrouter") // reads OPENROUTER_API_KEY from env
-//	req := sorus.NewRequest(client.Model("anthropic", "claude-sonnet-4-5")).
+//	req := sorus.NewRequest(cat.Provider("openrouter").MustModel("anthropic/claude-sonnet-4-5")).
 //	    System("...").
 //	    Temperature(0.7).
 //	    User("Hello")
 //	resp, err := client.Chat(ctx, req)
 //
-// Today the package supports providers with `npm: "@ai-sdk/openai-compatible"`
-// or `npm: "@ai-sdk/openai"` in their catalog entry — see [New]. Future
-// implementations plug into the same [Client] surface.
+// Supported wire protocols are listed on [New]: today, anything whose catalog
+// `npm` is one of the supported values.
 package sorus
 
 import "errors"
