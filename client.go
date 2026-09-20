@@ -84,6 +84,8 @@ func New(ctx context.Context, cat *Catalog, providerID string, opts ...Option) (
 	switch p.NPM {
 	case "@ai-sdk/openai-compatible", "@ai-sdk/openai":
 		return newChatCompletionsClient(p, cfg.apiKey, cfg.httpClient)
+	case "@ai-sdk/anthropic":
+		return newAnthropicClient(p, cfg.apiKey, cfg.httpClient)
 	default:
 		return nil, fmt.Errorf("%w: provider %s (npm=%q)", ErrUnsupportedProvider, p.ID, p.NPM)
 	}
