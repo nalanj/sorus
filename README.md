@@ -67,12 +67,12 @@ ANTHROPIC_API_KEY=... sorus -provider anthropic -model claude-sonnet-4-5 -prompt
 echo "Summarize this:" | sorus -provider openrouter -model anthropic/claude-sonnet-4-5
 ```
 
-Defaults to provider `minimax` / model `MiniMax-M2`. Flags:
+`-provider` and `-model` are required. Flags:
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| `-provider` | `minimax` | Provider id from the models.dev catalog |
-| `-model` | `MiniMax-M2` | Model id on that provider |
+| `-provider` | _(required)_ | Provider id from the models.dev catalog |
+| `-model` | _(required)_ | Model id on that provider |
 | `-system` | _(unset)_ | System prompt |
 | `-prompt` | _(unset)_ | User prompt; if empty, read from stdin |
 | `-temperature` | -1 _(unset)_ | Sampling temperature 0.0–1.0 |
@@ -302,7 +302,7 @@ for _, query := range queries {
 
 ## Contributing
 
-Open an issue first. Before sending a PR or patch, file an [issue](https://github.com/nalanj/sorus/issues) describing what you want to change and why — it's easier to align on approach before code is written than to rework a pull request after the fact. Bugs, feature ideas, and questions all fit.
+Open an issue first. Pull requests are only open to existing contributors, so the [issue tracker](https://github.com/nalanj/sorus/issues) is where outside contributions start — file an issue describing what you want to change or report, and we'll coordinate on approach and scope there. Bugs, feature ideas, and questions all fit.
 
 ## License
 

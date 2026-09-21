@@ -24,10 +24,10 @@ import (
 )
 
 func main() {
-	provider := flag.String("provider", "minimax",
-		"provider id in the models.dev catalog (e.g. \"openrouter\", \"anthropic\", \"minimax\")")
-	modelID := flag.String("model", "MiniMax-M2",
-		"model id on the chosen provider (e.g. \"MiniMax-M2\", \"anthropic/claude-sonnet-4-5\")")
+	provider := flag.String("provider", "",
+		"provider id in the models.dev catalog (e.g. \"openrouter\", \"anthropic\"); required")
+	modelID := flag.String("model", "",
+		"model id on the chosen provider (e.g. \"anthropic/claude-sonnet-4-5\"); required")
 	system := flag.String("system", "",
 		"system prompt (sent as a system message)")
 	promptFlag := flag.String("prompt", "",
