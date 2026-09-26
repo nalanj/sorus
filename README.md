@@ -77,6 +77,7 @@ echo "Summarize this:" | sorus -provider openrouter -model anthropic/claude-sonn
 | `-prompt` | _(unset)_ | User prompt; if empty, read from stdin |
 | `-temperature` | -1 _(unset)_ | Sampling temperature 0.0–1.0 |
 | `-max-tokens` | -1 _(unset)_ | Maximum output tokens |
+| `-effort` | _(unset)_ | Reasoning effort; checked against the model's catalog values |
 | `-no-stream` | `false` | Single non-streaming request |
 | `-quiet` | `false` | Suppress reasoning/tool-call events on stderr |
 
@@ -117,10 +118,10 @@ The generic `Reasoning` struct maps onto each implementation's idiom:
 
 | `Reasoning` field | Chat completions | Anthropic |
 | --- | --- | --- |
-| `Effort` | `reasoning_effort` | — |
+| `Effort` | `reasoning_effort` | `output_config.effort` |
 | `BudgetTokens` | — | `thinking.budget_tokens` |
 
-Each implementation reads only the fields it understands; over-populating is harmless.
+Each implementation reads only the fields it understands and sends them as-is. Valid values differ per model; `Model.ReasoningOptions` lists them, and `Model.CheckEffort` validates an `Effort` value against that list. On Anthropic, `Effort` doesn't set `thinking`, so the model's default thinking behavior applies.
 
 ## API reference
 
@@ -229,12 +230,12 @@ req := sorus.NewRequest(model).
 ### Reasoning
 
 ```go
-// Chat-completions providers honor Effort:
+// Chat-completions and Anthropic providers honor Effort:
 req := sorus.NewRequest(model).
     User("Solve this step-by-step.").
     Reasoning(sorus.Reasoning{Effort: "medium"})
 
-// Anthropic honors BudgetTokens:
+// Anthropic also honors BudgetTokens:
 req = sorus.NewRequest(model).
     User("Solve this step-by-step.").
     Reasoning(sorus.Reasoning{BudgetTokens: 4096})

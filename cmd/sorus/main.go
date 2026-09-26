@@ -36,6 +36,8 @@ func main() {
 		"sampling temperature in 0.0–1.0; -1 leaves it unset")
 	maxTokens := flag.Int("max-tokens", -1,
 		"maximum number of output tokens; -1 leaves it unset")
+	effort := flag.String("effort", "",
+		"reasoning effort (e.g. \"low\", \"high\"); valid values depend on the model")
 	noStream := flag.Bool("no-stream", false,
 		"make a single non-streaming request instead of streaming")
 	quiet := flag.Bool("quiet", false,
@@ -49,6 +51,7 @@ func main() {
 		promptFlag:  *promptFlag,
 		temperature: *temperature,
 		maxTokens:   *maxTokens,
+		effort:      *effort,
 		noStream:    *noStream,
 		quiet:       *quiet,
 	}); err != nil {
@@ -64,6 +67,7 @@ type runOpts struct {
 	promptFlag  string
 	temperature float64
 	maxTokens   int
+	effort      string
 	noStream    bool
 	quiet       bool
 }
@@ -72,11 +76,6 @@ func run(ctx context.Context, o runOpts) error {
 	cat, err := sorus.LoadCatalog(ctx)
 	if err != nil {
 		return fmt.Errorf("load catalog: %w", err)
-	}
-
-	client, err := sorus.New(ctx, cat, o.provider)
-	if err != nil {
-		return fmt.Errorf("client: %w", err)
 	}
 
 	prov := cat.Provider(o.provider)
@@ -88,6 +87,17 @@ func run(ctx context.Context, o runOpts) error {
 		return fmt.Errorf("model %q not found on provider %q", o.modelID, o.provider)
 	}
 
+	if o.effort != "" {
+		if err := m.CheckEffort(o.effort); err != nil {
+			return err
+		}
+	}
+
+	client, err := sorus.New(ctx, cat, o.provider)
+	if err != nil {
+		return fmt.Errorf("client: %w", err)
+	}
+
 	req := sorus.NewRequest(m)
 	if o.system != "" {
 		req = req.System(o.system)
@@ -97,6 +107,9 @@ func run(ctx context.Context, o runOpts) error {
 	}
 	if o.maxTokens > 0 {
 		req = req.MaxTokens(o.maxTokens)
+	}
+	if o.effort != "" {
+		req = req.Reasoning(sorus.Reasoning{Effort: o.effort})
 	}
 
 	prompt := strings.TrimSpace(o.promptFlag)

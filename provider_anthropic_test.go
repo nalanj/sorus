@@ -97,6 +97,58 @@ func TestBuildAnthropicParamsAllFields(t *testing.T) {
 	}
 }
 
+func TestBuildAnthropicParamsReasoning(t *testing.T) {
+	m := &Model{ID: "claude-opus-5-5"}
+	cases := []struct {
+		name    string
+		r       Reasoning
+		wants   []string
+		absents []string
+	}{
+		{
+			name:    "effort",
+			r:       Reasoning{Effort: "high"},
+			wants:   []string{`"output_config":{"effort":"high"}`},
+			absents: []string{`"thinking"`},
+		},
+		{
+			name:    "budget",
+			r:       Reasoning{BudgetTokens: 2048},
+			wants:   []string{`"thinking":{"budget_tokens":2048,"type":"enabled"}`},
+			absents: []string{`"output_config"`},
+		},
+		{
+			name:  "both sent as-is",
+			r:     Reasoning{Effort: "low", BudgetTokens: 2048},
+			wants: []string{`"effort":"low"`, `"budget_tokens":2048`},
+		},
+		{
+			name:    "empty",
+			r:       Reasoning{},
+			absents: []string{`"thinking"`, `"output_config"`},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := buildAnthropicParams(NewRequest(m).User("hi").Reasoning(tc.r))
+			if err != nil {
+				t.Fatal(err)
+			}
+			s := mustMarshal(t, p)
+			for _, w := range tc.wants {
+				if !strings.Contains(s, w) {
+					t.Errorf("missing %q in:\n%s", w, s)
+				}
+			}
+			for _, a := range tc.absents {
+				if strings.Contains(s, a) {
+					t.Errorf("unexpected %q in:\n%s", a, s)
+				}
+			}
+		})
+	}
+}
+
 func TestBuildAnthropicToolChoice(t *testing.T) {
 	cases := []struct {
 		name        string

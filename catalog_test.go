@@ -2,6 +2,7 @@ package sorus
 
 import (
 	"context"
+	"errors"
 	"testing"
 )
 
@@ -88,5 +89,42 @@ func TestCatalogFromBytesRoundtrip(t *testing.T) {
 	}
 	if len(parsed.Providers()) != n {
 		t.Errorf("provider count mismatch: live=%d parsed=%d", n, len(parsed.Providers()))
+	}
+}
+
+func TestModelCheckEffort(t *testing.T) {
+	effortModel := &Model{ID: "e", ReasoningOptions: []ReasoningOption{
+		{Type: ReasoningEffort, Values: []string{"low", "high"}},
+	}}
+	openEffortModel := &Model{ID: "o", ReasoningOptions: []ReasoningOption{
+		{Type: ReasoningEffort},
+	}}
+	budgetModel := &Model{ID: "b", ReasoningOptions: []ReasoningOption{
+		{Type: ReasoningBudgetTokens},
+	}}
+	plainModel := &Model{ID: "p"}
+
+	cases := []struct {
+		name   string
+		m      *Model
+		effort string
+		ok     bool
+	}{
+		{"listed value", effortModel, "high", true},
+		{"unlisted value", effortModel, "max", false},
+		{"no values listed", openEffortModel, "anything", true},
+		{"budget only", budgetModel, "low", false},
+		{"no reasoning options", plainModel, "low", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.m.CheckEffort(tc.effort)
+			if tc.ok && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if !tc.ok && !errors.Is(err, ErrUnsupportedEffort) {
+				t.Errorf("want ErrUnsupportedEffort, got %v", err)
+			}
+		})
 	}
 }

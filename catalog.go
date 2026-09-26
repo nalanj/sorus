@@ -1,5 +1,11 @@
 package sorus
 
+import (
+	"fmt"
+	"slices"
+	"strings"
+)
+
 // Provider is one catalog provider entry. It carries the metadata needed to
 // pick a wire-protocol implementation and to look up credentials in the
 // process environment.
@@ -82,6 +88,30 @@ func (m *Model) Ref() string { return m.ID }
 
 // Provider returns the parent provider of this model.
 func (m *Model) Provider() *Provider { return m.provider }
+
+// CheckEffort reports whether effort is a valid [Reasoning.Effort] for m
+// according to its [ReasoningEffort] option. It returns nil if the value is
+// listed or the option lists no values, and an error wrapping
+// [ErrUnsupportedEffort] otherwise.
+func (m *Model) CheckEffort(effort string) error {
+	var others []string
+	for _, ro := range m.ReasoningOptions {
+		if ro.Type != ReasoningEffort {
+			others = append(others, string(ro.Type))
+			continue
+		}
+		if len(ro.Values) == 0 || slices.Contains(ro.Values, effort) {
+			return nil
+		}
+		return fmt.Errorf("%w: %s accepts %s, got %q",
+			ErrUnsupportedEffort, m.ID, strings.Join(ro.Values, ", "), effort)
+	}
+	if len(others) == 0 {
+		return fmt.Errorf("%w: %s has no reasoning controls", ErrUnsupportedEffort, m.ID)
+	}
+	return fmt.Errorf("%w: %s has reasoning controls: %s",
+		ErrUnsupportedEffort, m.ID, strings.Join(others, ", "))
+}
 
 // Model returns the model with the given id, or nil if unknown.
 func (p *Provider) Model(id string) (*Model, bool) {

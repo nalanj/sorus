@@ -142,8 +142,13 @@ func buildAnthropicParams(req *Request) (anthropic.MessageNewParams, error) {
 	if seqs := req.stopSeqs(); len(seqs) > 0 {
 		p.StopSequences = append([]string(nil), seqs...)
 	}
-	if r := req.reasoningPtr(); r != nil && r.BudgetTokens > 0 {
-		p.Thinking = anthropic.ThinkingConfigParamOfEnabled(int64(r.BudgetTokens))
+	if r := req.reasoningPtr(); r != nil {
+		if r.Effort != "" {
+			p.OutputConfig = anthropic.OutputConfigParam{Effort: anthropic.OutputConfigEffort(r.Effort)}
+		}
+		if r.BudgetTokens > 0 {
+			p.Thinking = anthropic.ThinkingConfigParamOfEnabled(int64(r.BudgetTokens))
+		}
 	}
 	return p, nil
 }
