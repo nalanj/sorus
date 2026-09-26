@@ -12,6 +12,7 @@ go = "1.27.1"
 [tasks.run]
 description = "Run the sorus CLI"
 run = "go run ./cmd/sorus"
+env = { _.file = ".env" }
 
 [tasks.test]
 description = "Run all tests"
