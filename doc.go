@@ -26,4 +26,5 @@ var (
 	ErrCatalogFetch        = errors.New("sorus: catalog fetch failed")
 	ErrCatalogParse        = errors.New("sorus: catalog parse failed")
 	ErrStreamClosed        = errors.New("sorus: stream is closed")
+	ErrUnsupportedEffort   = errors.New("sorus: effort not supported by model")
 )
